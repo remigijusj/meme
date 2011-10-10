@@ -52,6 +52,7 @@ def show_usage
 > meme.rb <MEME> [TOP\\LINES // BOTTOM] [options]
     -l --list:   List available memes  (only option)
     -n --name:   Name of output file   (default: meme_)
+    -r --random: Name generated random
     -o --open:   Open after generation (default)
     -d --drop:   Copy to dropbox after generation
     -t --top:    Font size of top text
@@ -70,6 +71,10 @@ OptionParser.new do |opts|
 
   opts.on("-n name", "--name name", "Name of output file") do |v|
     options[:output] = "#{v}.jpg"
+  end
+
+  opts.on("-r size", "--random size", "Generate random name") do |v|
+    options[:random] = v.to_i
   end
 
   opts.on("-o", "--open", "Open after generation") do
@@ -119,7 +124,14 @@ source = Dir.glob("#{DRAWER}/#{meme}*").first or begin
   puts "Error: Source meme not found!"
   exit
 end
-output = options[:output] || File.basename(source).sub(/\.jpg$/, '_.jpg')
+output = if options[:output]
+  options[:output]
+elsif options[:random]
+  symbols = ['a'..'z','A'..'Z','0'..'9'].map(&:to_a).flatten.join
+  options[:random].times.map { symbols[rand(symbols.size)] }.join << '.jpg'
+else
+  File.basename(source).sub(/\.jpg$/, '_.jpg')
+end
 
 texts = ARGV.join(' ').upcase.gsub('\\\\','\n').split('//').map {|it| it.strip }
 
